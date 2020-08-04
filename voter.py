@@ -24,6 +24,30 @@ class Voter:
         driver.set_script_timeout(30)  # 设置脚本超时时间。
         return driver
 
+    def xpath_babyname(self, driver, index):
+        return driver.find_element_by_xpath(
+                    "/html/body/div[1]/div[4]/ul/li[%s]/div/p[1]" % index
+                )
+
+    def xpath_votenum(self, driver, index):
+        return driver.find_element_by_xpath(
+                    "/html/body/div[1]/div[4]/ul/li[%s]/div/div" % index
+                )
+
+    def xpath_votebtn(self, driver, index):
+        return  driver.find_element_by_xpath(
+                    "/html/body/div[1]/div[4]/ul/li[%s]/div/div/a" % index
+                )
+
+    def get_baby_index(self, driver):
+        for i in range(20):
+            baby = self.xpath_babyname(driver, i+1)
+            if baby.text[:3] == '石箫诚':
+                break
+        return i+1
+
+
+
     def vote(self, loop_num=1):
         start = time.time()
         start_url = "https://mobile.beile.com/h5/vote/index?id=4"
@@ -43,16 +67,12 @@ class Voter:
                 # 向下翻页
                 driver.execute_script("window.scrollBy(0,1000)")
 
+                index = self.get_baby_index(driver)
+
                 # 根据XPATH定位宝宝姓名、票数及投票按钮
-                baby = driver.find_element_by_xpath(
-                    "/html/body/div[1]/div[4]/ul/li[9]/div/p[1]"
-                )
-                vote_num = driver.find_element_by_xpath(
-                    "/html/body/div[1]/div[4]/ul/li[9]/div/div"
-                )
-                vote_btn = driver.find_element_by_xpath(
-                    "/html/body/div[1]/div[4]/ul/li[9]/div/div/a"
-                )
+                baby = self.xpath_babyname(driver, index)
+                vote_num = self.xpath_votenum(driver, index)
+                vote_btn = self.xpath_votebtn(driver, index)
                 highlight(driver, vote_btn)
 
                 # 点击投票
@@ -96,4 +116,4 @@ if __name__ == "__main__":
     header = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
     cookie = "FSSBBIl1UgzbN7N80S=CIZMmWgUJuIp4X2JSfF2C_RZsqDr5ADMfAnvWR4rsmmSSqyh2B.2Yejdp79k54mk; token=zIECDO4CGEgI2Ov1ZJ7cNTOdBFlZ97WFS5zTCvTn3Dw3CTr4RtlnBWTJAsE; FSSBBIl1UgzbN7N80T=365sqkBMI51dqorpVnTc8f.imnowcodsN5PL8r62XGEBquO6B4gvtiRqVFPe30orUOyuIlCB10VyeRRGCJBY_lFrMhKl0MRFdyNBDJVO43rQ_3W6Ak4MhLnAu70X3.D8keslCDrylI5VwS5R5SYI.NDwDLLu71YxEV_fjcIMi7pBBOslAHL6vxLhjw4dYFOFNrBfPCjrd5zIsfEZ0dP_.zue7OY013V5N_ncZpOpH.BvsE5pGMlCBw_dxirKoCcHBnH9BcpUkXp7YfimkIKycYe6wKSe76VYCx1xHUGs.9zbhClZmoEr3tMKzP.lkjIcHEBmTUBq4MOeFgXaohjX6Q7kStW9nKfcBagu.tPYauMzCbq"
     v = Voter(header=header, cookies=cookie)
-    v.vote(1000)
+    v.vote(30000)
